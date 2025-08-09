@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Checkout - Sticking with You</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://www.paypal.com/sdk/js?client-id=AZONsXrAn2OWOIpsV0zDHA0mPmi7ojR2PqaqRIy9PVdSw12SLoR8p97YcZ2Xrp_Fb4FI1VpHQj5-tn_M&currency=USD"></script>
+  <script src="./js/cart.js"></script>
+</head>
+<body class="bg-orange-50 text-gray-800">
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center p-4 bg-orange-200 shadow">
+    <a href="index.html" class="flex items-center space-x-2">
+      <img src="/images/logo.png" alt="Capybara Logo" class="w-10 h-10 rounded-full">
+      <span class="text-2xl font-bold">Sticking with You</span>
+    </a>
+    <div class="space-x-4">
+      <a href="products.html" class="hover:underline">Products</a>
+      <a href="about.html" class="hover:underline">About</a>
+      <button onclick="openCartModal()" class="hover:underline">Cart (<span id="cart-count">0</span>)</button>
+    </div>
+  </nav>
+
+      <!-- Cart Modal -->
+      <div id="cart-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+          <button onclick="closeCartModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+          <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+          <div id="cart-items" class="space-y-4"></div>
+          <div class="mt-6 flex justify-between items-center">
+            <p class="font-semibold">Total: $<span id="cart-total">0.00</span></p>
+            <a href="checkout.html" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Checkout</a>
+          </div>
+        </div>
+      </div>
+
+  <!-- Checkout Section -->
+  <section class="p-8">
+    <h1 class="text-3xl font-bold mb-6">Checkout</h1>
+    
+    <!-- Cart Items -->
+    <div id="checkout-items" class="space-y-4 mb-6"></div>
+    
+    <!-- Totals -->
+    <div class="border-t border-gray-300 pt-4">
+      <p>Subtotal: $<span id="checkout-subtotal">0.00</span></p>
+      <p>Shipping: $<span id="checkout-shipping">0.00</span></p>
+      <p class="text-lg font-semibold">Total: $<span id="checkout-total">0.00</span></p>
+    </div>
+
+    <!-- PayPal -->
+    <div id="paypal-button-container" class="mt-6"></div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-orange-200 text-center p-4 mt-16">
+    <p>&copy; 2025 Sticking with You. All rights reserved.</p>
+  </footer>
+
+  <script>
+    const FREE_SHIPPING_THRESHOLD = 18.0;
+    const SHIPPING_FLAT_RATE = 5.0;
+
+    function renderCheckout() {
+      const container = document.getElementById('checkout-items');
+      container.innerHTML = '';
+      let subtotal = 0;
+
+      cart.forEach((item, index) => {
+        subtotal += item.price * item.quantity;
+        container.innerHTML += `
+          <div class="flex items-center justify-between border-b border-gray-200 pb-4">
+            <div class="flex items-center space-x-4">
+              <img src="${item.image}" alt="${item.name}" class="w-16 h-16 rounded object-cover">
+              <div>
+                <p class="font-semibold">${item.name}</p>
+                <p class="text-sm text-gray-500">$${item.price.toFixed(2)} each</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <button class="px-2 py-1 bg-gray-200 rounded" onclick="updateQuantityCheckout(${index}, -1)">-</button>
+              <input type="number" min="1" value="${item.quantity}" 
+                class="w-12 text-center border rounded"
+                onchange="setQuantityCheckout(${index}, this.value)">
+              <button class="px-2 py-1 bg-gray-200 rounded" onclick="updateQuantityCheckout(${index}, 1)">+</button>
+            </div>
+            <button class="text-red-500 hover:underline" onclick="removeFromCartCheckout(${index})">Remove</button>
+          </div>
+        `;
+      });
+
+      const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_FLAT_RATE;
+      document.getElementById('checkout-subtotal').textContent = subtotal.toFixed(2);
+      document.getElementById('checkout-shipping').textContent = shipping.toFixed(2);
+      document.getElementById('checkout-total').textContent = (subtotal + shipping).toFixed(2);
+    }
+
+    function updateQuantityCheckout(index, delta) {
+      cart[index].quantity += delta;
+      if (cart[index].quantity <= 0) cart.splice(index, 1);
+      saveCart();
+      renderCheckout();
+    }
+
+    function setQuantityCheckout(index, value) {
+      const qty = parseInt(value, 10);
+      if (qty > 0) {
+        cart[index].quantity = qty;
+        saveCart();
+        renderCheckout();
+      }
+    }
+
+    function removeFromCartCheckout(index) {
+      cart.splice(index, 1);
+      saveCart();
+      renderCheckout();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderCheckout();
+      updateCartCount();
+
+      paypal.Buttons({
+        createOrder: function(data, actions) {
+          const subtotal = parseFloat(document.getElementById('checkout-subtotal').textContent);
+          const shipping = parseFloat(document.getElementById('checkout-shipping').textContent);
+          const total = (subtotal + shipping).toFixed(2);
+
+          return actions.order.create({
+            purchase_units: [{
+              amount: {
+                currency_code: 'USD',
+                value: total,
+                breakdown: {
+                  item_total: { currency_code: 'USD', value: subtotal.toFixed(2) },
+                  shipping: { currency_code: 'USD', value: shipping.toFixed(2) }
+                }
+              },
+              items: cart.map(item => ({
+                name: item.name,
+                unit_amount: { currency_code: 'USD', value: item.price.toFixed(2) },
+                quantity: item.quantity
+              }))
+            }]
+          });
+        },
+        onApprove: function(data, actions) {
+          return actions.order.capture().then(function(details) {
+            alert('Thank you! Your payment was successful.');
+            localStorage.clear();
+            window.location.href = 'index.html';
+          });
+        }
+      }).render('#paypal-button-container');
+    });
+  </script>
+</body>
+</html>

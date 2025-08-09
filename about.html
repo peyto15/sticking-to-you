@@ -1,0 +1,53 @@
+<!-- about.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Sticking with You</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- <link rel="stylesheet" href="styles.css"> -->
+</head>
+<script src="script.js"></script>
+<body class="bg-orange-50 text-gray-800">
+  <!-- Navbar -->
+  <nav class="flex justify-between items-center p-4 bg-orange-200 shadow">
+    <a href="index.html" class="flex items-center space-x-2">
+      <img src="/images/logo.png" alt="Capybara Logo" class="w-10 h-10 rounded-full">
+      <span class="text-2xl font-bold">Sticking with You</span>
+    </a>
+    <div class="space-x-4 flex items-center">
+      <a href="products.html" class="hover:underline">Products</a>
+      <a href="about.html" class="hover:underline">About</a>
+      <button onclick="openCartModal()" class="hover:underline">Cart (<span id="cart-count">0</span>)</button>
+    </div>
+  </nav>
+
+  <!-- Cart Modal -->
+  <div id="cart-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-lg shadow-lg w-full max-w-lg p-6 relative">
+      <button onclick="closeCartModal()" class="absolute top-2 right-2 text-gray-500 hover:text-black">&times;</button>
+      <h2 class="text-2xl font-bold mb-4">Your Cart</h2>
+      <div id="cart-items" class="space-y-4"></div>
+      <div class="mt-6 flex justify-between items-center">
+        <p class="font-semibold">Total: $<span id="cart-total">0.00</span></p>
+        <a href="checkout.html" class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600">Checkout</a>
+      </div>
+    </div>
+  </div>
+
+    <!-- About Section -->
+    <section class="p-8 max-w-3xl mx-auto">
+        <h1 class="text-3xl font-bold mb-6">About Sticking with You</h1>
+        <p class="mb-4">Hello! I’m the creator behind Sticking with You — a brand dedicated to spreading joy through the cutest stickers you’ll ever meet. Our mascot is a cheerful capybara, often spotted with a mandarin orange perched on its head, symbolizing warmth, calm, and a splash of fun.</p>
+        <p class="mb-4">Every sticker is designed with love, inspired by nature, animals, and the little moments that make us smile. Whether you’re decorating your laptop, water bottle, or journal, our stickers are here to brighten your day.</p>
+        <p>Thank you for supporting my small business and joining me in this capybara adventure!</p>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-orange-200 text-center p-4 mt-16">
+        <p>&copy; 2025 Sticking with You. All rights reserved.</p>
+    </footer>
+    <script src="./js/cart.js"></script>
+</body>
+</html>
